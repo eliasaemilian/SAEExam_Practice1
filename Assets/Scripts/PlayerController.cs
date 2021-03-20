@@ -43,6 +43,22 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         inventory.MaxWeight = 100;
         ValidItemIsAddedToInventory.AddListener( AddItemToInventory );
+        UIHandler.InventoryOpened.AddListener( FreezePlayer );
+        UIHandler.InventoryClosed.AddListener( UnfreezePlayer );
+    }
+
+    private void FreezePlayer()
+    {
+        haltMovement = true;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    private void UnfreezePlayer()
+    {
+        haltMovement = false;
+        Cursor.lockState = CursorLockMode.Locked;
+
     }
 
     private void FixedUpdate()
@@ -101,7 +117,7 @@ public class PlayerController : MonoBehaviour
             }
 
         }
-        else UIHandler.DisableItemPickup.Invoke("");
+        else UIHandler.DisableItemPickup.Invoke( null );
     }
 
     private void AddItemToInventory( Item item )

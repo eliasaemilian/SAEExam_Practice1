@@ -39,7 +39,7 @@ public class PickableItem : MonoBehaviour
     {
         if ( CheckIfValid( go ) )
         {
-            UIHandler.EnableItemPickup.Invoke( item.ItemName );
+            UIHandler.EnableItemPickup.Invoke( item );
         }
     }
 
@@ -49,7 +49,7 @@ public class PickableItem : MonoBehaviour
         {
             Debug.Log( $"{name} got picked up!" );
             Destroy( gameObject );
-            UIHandler.DisableItemPickup.Invoke( "" );
+            UIHandler.DisableItemPickup.Invoke( item );
 
             CheckForPlayerController();
             playerController.ValidItemIsAddedToInventory.Invoke( item );

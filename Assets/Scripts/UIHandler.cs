@@ -5,7 +5,7 @@ using UnityEngine.Events;
 using TMPro;
 
 [System.Serializable]
-public class UIEvent : UnityEvent<string>
+public class UIEvent : UnityEvent<Item>
 {
 
 }
@@ -26,17 +26,27 @@ public class UIHandler : MonoBehaviour
 
     private TextMeshProUGUI popUpText;
     public static UIEvent EnableItemPickup, DisableItemPickup;
+    public static UIEvent UIItemGotSelected;
 
+
+    public static UnityEvent InventoryOpened, InventoryClosed;
+
+    private bool checkForMouseInput;
     private void Awake()
     {
         popUpText = PopUpItemPickup.GetComponentInChildren<TextMeshProUGUI>();
         EnableItemPickup = new UIEvent();   
         DisableItemPickup = new UIEvent();
+        UIItemGotSelected = new UIEvent();
+        InventoryOpened = new UnityEvent();
+        InventoryClosed = new UnityEvent();
+        UIItemGotSelected.AddListener( FillSelectedItemPanel );
         EnableItemPickup.AddListener( EnableItemPopUp );
         DisableItemPickup.AddListener( DisableItemPopUp );
         PopUpItemPickup.SetActive( false );
         InventoryContainer.SetActive( false );
         PlayerController.inventory.InventoryChanged.AddListener( GenerateInventory );
+        ClearSelectedItemPanel();
     }
 
     // Update is called once per frame
@@ -44,16 +54,29 @@ public class UIHandler : MonoBehaviour
     {
         if (Input.GetKeyUp(KeyCode.Tab))
         {
-            if (InventoryContainer.activeSelf ) InventoryContainer.SetActive( false );
-            else InventoryContainer.SetActive( true );
+            if ( InventoryContainer.activeSelf )
+            {
+                InventoryContainer.SetActive( false );
+                InventoryClosed.Invoke();
+            }
+            else
+            {
+                InventoryContainer.SetActive( true );
+                InventoryOpened.Invoke();
+            }
         }
+
+
+
     }
+
 
     private void CreateNewItemEntry(Item item)
     {
         GameObject entry = Instantiate( ItemEntryPrefab );
         entry.transform.SetParent(ItemContainer);
         entry.GetComponentInChildren<TextMeshProUGUI>().text = item.ItemName;
+        entry.GetComponent<InventoryItem>().Item = item;
 
     }
 
@@ -79,13 +102,21 @@ public class UIHandler : MonoBehaviour
         UI_ItemValue.text = $"Value: {item.Value}";
     }
 
-    private void EnableItemPopUp( string itemName )
+    private void ClearSelectedItemPanel()
     {
-        popUpText.text = $"Press [ E ] to pickup {itemName}";
+        UI_ItemName.text = "";
+        UI_ItemDescription.text = "";
+        UI_ItemWeight.text = "";
+        UI_ItemValue.text = "";
+    }
+
+    private void EnableItemPopUp( Item item )
+    {
+        popUpText.text = $"Press [ E ] to pickup {item.ItemName}";
         PopUpItemPickup.SetActive( true );
     }
 
-    private void DisableItemPopUp( string itemName )
+    private void DisableItemPopUp( Item item )
     {
         PopUpItemPickup.SetActive( false );
     }
