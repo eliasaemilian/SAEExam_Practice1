@@ -25,33 +25,49 @@ public class PickableItem : MonoBehaviour
         // signup
         CheckForPlayerController();
         playerController.ItemPickupEvent.AddListener( GetPickedUpByPlayer );
+        playerController.ItemSeenEvent.AddListener( GetSeenByPlayer );
     }
 
     private void OnDisable()
     {
         // design
         CheckForPlayerController();
-        playerController.ItemPickupEvent.RemoveListener( GetPickedUpByPlayer );
+       // if ( playerController.ItemPickupEvent != null ) playerController.ItemPickupEvent.RemoveListener( GetPickedUpByPlayer );
+    }
+
+    private void GetSeenByPlayer(GameObject go)
+    {
+        if ( CheckIfValid( go ) )
+        {
+            UIHandler.EnableItemPickup.Invoke( item.ItemName );
+        }
     }
 
     private void GetPickedUpByPlayer(GameObject go)
     {
-        bool valid = false;
-        if ( go == this ) valid = true;
-        else
-        {           
-            for ( int i = 0; i < children.Length; i++ )
-            {
-                if ( go == children[i].gameObject ) valid = true;
-            }
-        }
-
-        if (valid)
+        if (CheckIfValid(go))
         {
             Debug.Log( $"{name} got picked up!" );
             Destroy( gameObject );
             UIHandler.DisableItemPickup.Invoke( "" );
+
+            CheckForPlayerController();
+            playerController.ValidItemIsAddedToInventory.Invoke( item );
         }
+    }
+
+    private bool CheckIfValid(GameObject go)
+    {
+        if ( go == this ) return true;
+        else
+        {
+            for ( int i = 0; i < children.Length; i++ )
+            {
+                if ( go == children[i].gameObject ) return true;
+            }
+        }
+
+        return false;
     }
 
     private void CheckForPlayerController()

@@ -9,6 +9,11 @@ public class PlayerEvent : UnityEvent<GameObject>
 {
 
 }
+
+public class ItemEvent : UnityEvent<Item>
+{
+
+}
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] float rotationPower = 3f;
@@ -21,16 +26,23 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Rigidbody rigidbody;
 
     public PlayerEvent ItemPickupEvent = new PlayerEvent();
+    public PlayerEvent ItemSeenEvent = new PlayerEvent();
+
+    public ItemEvent ValidItemIsAddedToInventory = new ItemEvent();
 
     Vector2 moveInput;
     Vector2 lookInput;
     float sprintInput;
 
     private bool haltMovement;
+    private bool encumbered;
+    public static Inventory inventory = new Inventory();
 
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
+        inventory.MaxWeight = 100;
+        ValidItemIsAddedToInventory.AddListener( AddItemToInventory );
     }
 
     private void FixedUpdate()
@@ -39,7 +51,7 @@ public class PlayerController : MonoBehaviour
 
         moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         lookInput = new Vector2(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y"));
-        sprintInput = Input.GetAxis("Sprint");
+        if ( !encumbered ) sprintInput = Input.GetAxis("Sprint");
 
         UpdateFollowTargetRotation();
 
@@ -75,13 +87,11 @@ public class PlayerController : MonoBehaviour
             {
                 Debug.Log( "Seeing " + hit.collider.gameObject.name );
 
-                UIHandler.EnableItemPickup.Invoke( hit.collider.gameObject.name );
+                ItemSeenEvent.Invoke( hit.collider.gameObject );
 
                 if ( Input.GetKeyUp( KeyCode.E ) )
                 {
-                    // add to Inventory
-
-                    // destroy Item GO
+                    // call item event to add to inventory
                     ItemPickupEvent.Invoke( hit.collider.gameObject );
 
                     // play Pickup Animation
@@ -92,6 +102,25 @@ public class PlayerController : MonoBehaviour
 
         }
         else UIHandler.DisableItemPickup.Invoke("");
+    }
+
+    private void AddItemToInventory( Item item )
+    {
+        if ( CheckIfMaxWeightIsReached() ) encumbered = true;
+        else
+        {
+            inventory.AddItemToInventory(item);
+
+            encumbered = false;
+        }
+
+    }
+
+    private bool CheckIfMaxWeightIsReached() 
+    {
+        if ( inventory.MaxWeight <= 0 ) return false;
+        if ( inventory.CarriedWeight > inventory.MaxWeight ) return true;
+        else return false;
     }
 
     private void PlayPickupAnim()
