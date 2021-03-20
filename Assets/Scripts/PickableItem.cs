@@ -32,7 +32,6 @@ public class PickableItem : MonoBehaviour
     {
         // design
         CheckForPlayerController();
-       // if ( playerController.ItemPickupEvent != null ) playerController.ItemPickupEvent.RemoveListener( GetPickedUpByPlayer );
     }
 
     private void GetSeenByPlayer(GameObject go)

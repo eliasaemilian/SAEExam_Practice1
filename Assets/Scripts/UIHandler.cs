@@ -31,7 +31,6 @@ public class UIHandler : MonoBehaviour
 
     public static UnityEvent InventoryOpened, InventoryClosed;
 
-    private bool checkForMouseInput;
     private void Awake()
     {
         popUpText = PopUpItemPickup.GetComponentInChildren<TextMeshProUGUI>();
@@ -65,8 +64,6 @@ public class UIHandler : MonoBehaviour
                 InventoryOpened.Invoke();
             }
         }
-
-
 
     }
 

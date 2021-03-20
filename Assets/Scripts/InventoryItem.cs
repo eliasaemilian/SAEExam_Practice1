@@ -25,7 +25,7 @@ public class InventoryItem : MonoBehaviour
             if ( wordIndex != -1 )
             {
                 UIHandler.UIItemGotSelected.Invoke( Item );
-                Debug.Log( "!!!" );
+
             }
         }
 
