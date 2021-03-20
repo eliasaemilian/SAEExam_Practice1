@@ -2,20 +2,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 
+[System.Serializable]
+public class PlayerEvent : UnityEvent<GameObject>
+{
 
+}
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] float rotationPower = 3f;
     [SerializeField] float walkSpeed = 1f;
     [SerializeField] float sprintSpeed = 3f;
+    [SerializeField] float pickupRange = 50f;
+    [SerializeField] string itemTag = "Item";
     [SerializeField] Transform followTransform;
     [SerializeField] Animator animator;
     [SerializeField] Rigidbody rigidbody;
 
+    public PlayerEvent ItemPickupEvent = new PlayerEvent();
+
     Vector2 moveInput;
     Vector2 lookInput;
     float sprintInput;
+
 
     private void Start()
     {
@@ -45,6 +55,34 @@ public class PlayerController : MonoBehaviour
             transform.rotation = Quaternion.Euler(0, followTransform.eulerAngles.y, 0);
             //reset the y rotation of the look transform
             followTransform.localEulerAngles = new Vector3(followTransform.localEulerAngles.x, 0, 0);
+        }
+    }
+
+    private void Update()
+    {
+        CheckForItemInLineOfSight();
+    }
+
+    private void CheckForItemInLineOfSight()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, transform.forward, out hit, pickupRange ))
+        {
+            if ( hit.collider.tag == itemTag )
+            {
+                Debug.Log( "Seeing " + hit.collider.gameObject.name );
+                if ( Input.GetKeyUp( KeyCode.E ) )
+                {
+                    // add to Inventory
+                    // destroy Item GO
+                    ItemPickupEvent.Invoke( hit.collider.gameObject );
+                    Debug.Log( "Picking up Item" );
+
+                    // play Pickup Animation
+                }
+
+            }
+
         }
     }
 
