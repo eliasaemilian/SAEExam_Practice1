@@ -26,6 +26,7 @@ public class PlayerController : MonoBehaviour
     Vector2 lookInput;
     float sprintInput;
 
+    private bool haltMovement;
 
     private void Start()
     {
@@ -34,6 +35,8 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if ( haltMovement ) return;
+
         moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         lookInput = new Vector2(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y"));
         sprintInput = Input.GetAxis("Sprint");
@@ -66,24 +69,44 @@ public class PlayerController : MonoBehaviour
     private void CheckForItemInLineOfSight()
     {
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, pickupRange ))
+        if ( Physics.Raycast( transform.position, transform.forward, out hit, pickupRange ) )
         {
             if ( hit.collider.tag == itemTag )
             {
                 Debug.Log( "Seeing " + hit.collider.gameObject.name );
+
+                UIHandler.EnableItemPickup.Invoke( hit.collider.gameObject.name );
+
                 if ( Input.GetKeyUp( KeyCode.E ) )
                 {
                     // add to Inventory
+
                     // destroy Item GO
                     ItemPickupEvent.Invoke( hit.collider.gameObject );
-                    Debug.Log( "Picking up Item" );
 
                     // play Pickup Animation
+                    PlayPickupAnim();
                 }
 
             }
 
         }
+        else UIHandler.DisableItemPickup.Invoke("");
+    }
+
+    private void PlayPickupAnim()
+    {
+        haltMovement = true;
+        animator.SetBool( "pickup", true);
+        StartCoroutine( PickupAnimation() );
+    }
+
+    IEnumerator PickupAnimation()
+    {
+        yield return new WaitForSeconds( 2f );
+        animator.SetBool( "pickup", false );
+
+        haltMovement = false;
     }
 
     private void UpdateFollowTargetRotation()

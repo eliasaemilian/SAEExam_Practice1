@@ -50,6 +50,7 @@ public class PickableItem : MonoBehaviour
         {
             Debug.Log( $"{name} got picked up!" );
             Destroy( gameObject );
+            UIHandler.DisableItemPickup.Invoke( "" );
         }
     }
 
